@@ -1,0 +1,36 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: testenv
+  annotations:
+    wave.pusher.com/update-on-config-change: "true"
+spec:
+  selector:
+    matchLabels:
+      app: testenv
+  replicas: 2
+  revisionHistoryLimit: 2
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 0
+  template:
+    metadata:
+      labels:
+        app: testenv
+    spec:
+      containers:
+      - name: testenv
+        image: docker.io/dimitropoulos/testenv
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "50m"
+        ports:
+        - containerPort: 8080
+        env:
+          - name: TEST_ENV
+            valueFrom:
+              secretKeyRef:
+                name: testenv-secret
+                key: value
