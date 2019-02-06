@@ -1,3 +1,4 @@
+---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -12,8 +13,8 @@ spec:
   revisionHistoryLimit: 2
   strategy:
     rollingUpdate:
-      maxUnavailable: 1
-      maxSurge: 0
+      maxUnavailable: 0
+      maxSurge: 1
   template:
     metadata:
       labels:

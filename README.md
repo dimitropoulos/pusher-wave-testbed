@@ -1,6 +1,14 @@
-apply in this order:
-- kustomized.yaml
-- testenv.1.secret.yaml
-- testenv.deployment.yaml
+start minikube
+```bash
+minikube start
+```
 
-I included the .sh scripts just for reference to what I installed.  Same goes for the go script and the dockerfile.
+then install the resources
+```bash
+sh setup.sh
+```
+
+then, once the resources are all running (maybe wait like 90 seconds or so)
+```
+sh downtimeDetector.sh
+```

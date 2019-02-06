@@ -1,43 +1,57 @@
-url=$1
 
-if [ -z $url ]; then
-    echo please supply a url
-    exit
-fi
+getTime() {
+    echo $(date '+%s%N' | cut -b1-13)
+}
 
-value=$(date)
+serviceName=$1
+secretName=$serviceName-secret
+
+url=$(minikube service $serviceName --url)
+
+nextValue=$(getTime)
 
 prior=$(curl --silent $url)
 
-echo prior: $prior
-echo updating to: $value
-echo
+if [ "$prior" = "" ]; then
+    echo the $serviceName service is not responding at $url
+    exit
+fi
 
-kubectl create secret generic testenv-secret --from-literal=value="$value" --dry-run --output yaml | kubectl apply --filename -
+echo pinging $url
+echo updating from $prior to $nextValue
 
-# not sure why, but if I don't wait a second, curl returns nothing a couple times _right_ after I start hitting the endpoint
+kubectl create secret generic $secretName --from-literal=value="$nextValue" --dry-run --output yaml | kubectl apply --filename -
+
+# not sure why, but if I don't wait a second, curl returns nothing a couple times _right_ after I start hitting the endpoint.  Perhaps due to hitting a rate limit?
 sleep 2
 
-start=$(date '+%s%N' | cut -b1-13)
+
+start=$(getTime)
 startOutage=0
 
-for i in `seq 1 200`;
+for i in $(seq 1 200);
 do
-    result=$(curl --silent $url)
+    currentValue=$(curl --silent $url)
 
-    if [ "$prior" = "$result" ]; then
-        # change not yet realized
+    if [ "$prior" = "$currentValue" ]; then
         continue
     fi
 
-    if [ "$result" = "" ] && [ $startOutage = 0 ]; then
-        startOutage=$(date '+%s%N' | cut -b1-13)
+    if [ "$currentValue" = "" ] && [ $startOutage = 0 ]; then
+        startOutage=$(getTime)
         continue
     fi
 
-    if [ "$result" = "$value" ]; then
-        endOutage=$(date '+%s%N' | cut -b1-13)
-        echo outage started at $startOutage and ended at $endOutage. total milliseconds: $(expr $endOutage - $startOutage)
+    if [ "$currentValue" = "$nextValue" ]; then
+        endOutage=$(getTime)
+        if [ $startOutage = 0 ]; then
+            echo no downtime observed
+            exit
+        fi
+
+        outageDuration=$(expr $endOutage - $startOutage)
+        echo outage obserbed starting at $startOutage and ending at $endOutage
+        echo duration of outage: $outageDuration milliseconds
         exit
     fi
 done
