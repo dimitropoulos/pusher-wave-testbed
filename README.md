@@ -10,5 +10,5 @@ sh setup.sh
 
 then, once the resources are all running (maybe wait like 90 seconds or so)
 ```
-sh downtimeDetector.sh
+sh downtimeDetector.sh testenv
 ```

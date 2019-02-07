@@ -4,6 +4,11 @@ getTime() {
 }
 
 serviceName=$1
+if [ "$serviceName" = "" ]; then
+    echo $'please specify a service name as an argument.  For example:\nsh downtimeDetector.sh service-name'
+    exit
+fi
+
 secretName=$serviceName-secret
 
 url=$(minikube service $serviceName --url)
