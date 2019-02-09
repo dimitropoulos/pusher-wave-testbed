@@ -28,7 +28,7 @@ echo updating from $prior to $nextValue
 kubectl create secret generic $secretName --from-literal=value="$nextValue" --dry-run --output yaml | kubectl apply --filename -
 
 # not sure why, but if I don't wait a second, curl returns nothing a couple times _right_ after I start hitting the endpoint.  Perhaps due to hitting a rate limit?
-sleep 2
+sleep 1
 
 
 start=$(getTime)
